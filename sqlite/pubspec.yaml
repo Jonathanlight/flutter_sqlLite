@@ -10,6 +10,7 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^0.1.2
   sqflite: any
+  path_provider: ^0.5.0
 
 dev_dependencies:
   flutter_test:
