@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:sqlite/model/databaseClient.dart';
 import 'dart:async';
 
 import 'package:sqlite/model/item.dart';
+import 'package:sqlite/widgets/data_empty.dart';
 
 class HomeController extends StatefulWidget {
   HomeController({Key key, this.title}) : super(key: key);
@@ -16,6 +18,12 @@ class _HomeControllerState extends State<HomeController> {
 
   String nouvelleListe;
   List<Item> items;
+
+  @override
+  void initState() {
+    super.initState();
+    getItems();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,8 +43,17 @@ class _HomeControllerState extends State<HomeController> {
           )
         ],
       ),
-      body: Center(
-      ),
+      body: (items == null || items.length == 0)
+      ? new DataEmpty()
+      : new ListView.builder(
+        itemCount: items.length,
+        itemBuilder: (context, i) {
+          Item item = items[i];
+          return new ListTile(
+            title: new Text(item.nom),
+          );
+        }
+      )
     );
   }
 
@@ -64,6 +81,14 @@ class _HomeControllerState extends State<HomeController> {
             new FlatButton(
               onPressed: () {
                 //add function for add liste in database
+                if(nouvelleListe != null) {
+                  Map<String, dynamic> map = {'nom': nouvelleListe };
+                  Item item = new Item();
+                  item.fromMap(map);
+                  DatabaseClient().ajoutItem(item).then((i) => getItems());
+                  nouvelleListe = null;
+                }
+                
                 Navigator.pop(buildContext);
               },
               child: new Text('Valider', style: TextStyle(color: Colors.blue),),
@@ -72,5 +97,13 @@ class _HomeControllerState extends State<HomeController> {
         );
       }
     );
+  }
+
+  void getItems() {
+    DatabaseClient().allItems().then((items) {
+      setState(() {
+        this.items = items;
+      });
+    });
   }
 }
